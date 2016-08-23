@@ -10,7 +10,7 @@ include:
   {% if ':' in file_path -%}
     {% set file_path = file_path.split(':')[1] -%}
     {% set map_type = file_path.split(':')[0] -%}
-  {% endif -%}
+  {% endif %}
 postfix_{{mapping}}:
   file.managed:
     - name: {{ file_path }}
@@ -24,10 +24,10 @@ postfix_{{mapping}}:
     {% endif -%}
     - template: jinja
     - context:
-        data: {{ data|json() }}
+        data: {{data|json()}}
     - require:
       - pkg: postfix
-  {% if map_type in postfix.postmap_types -%}
+  {% if map_type in postfix.postmap_types %}
 postmap_{{mapping}}:
   cmd.wait:
     - name: {{postfix.postmap}} {{map_type}} {{file_path}}
