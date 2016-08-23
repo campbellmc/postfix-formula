@@ -5,7 +5,7 @@ include:
 
 /etc/postfix/main.cf:
   file.managed:
-    - source: salt://{{slspath}}/files/main.cf
+    - source: salt://{{slspath}}/files/main.cf.jinja
     - user: root
     - group: root
     - mode: {{postfix.file_mode}}
@@ -18,7 +18,7 @@ include:
 {% if salt['pillar.get']('postfix:manage_master_config', True) %}
 /etc/postfix/master.cf:
   file.managed:
-    - source: salt://{{slspath}}/files/master.cf
+    - source: salt://{{slspath}}/files/master.cf.jinja
     - user: root
     - group: root
     - mode: {{postfix.file_mode}}

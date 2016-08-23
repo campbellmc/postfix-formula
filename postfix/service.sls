@@ -5,6 +5,7 @@ include:
 
 postfix_service:
   service.running:
+    - name: {{postfix.service}}
     - enable: {{ salt['pillar.get']('postfix:enable_service', True) }}
     - require:
       - pkg: postfix
