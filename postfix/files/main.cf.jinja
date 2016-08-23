@@ -114,12 +114,12 @@ sender_canonical_maps = hash:/etc/postfix/sender_canonical
 {% endif -%}
 
 {% if 'body_check_maps' in postfix.config -%}
-body_checks = postfix.body_check_maps
+body_checks = {{postfix.body_check_maps}}
 {% do processed_parameters.append('body_check_maps') -%}
 {% endif -%}
 
 {% if 'header_check_maps' in postfix.config -%}
-header_checks = postfix.header_check_maps
+header_checks = {{postfix.header_check_maps}}
 {% do processed_parameters.append('header_check_maps') -%}
 {% endif -%}
 
