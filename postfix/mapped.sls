@@ -7,7 +7,7 @@ include:
 {% for mapping, data in postfix.mapping.items() -%}
   {% set map_type = '' -%}
   {% set file_param = salt['pillar.get']('postfix:config:' ~ mapping) -%}
-  {% if ':' in file_path -%}
+  {% if ':' in file_param -%}
     {% set map_type,file_path = file_param.split(':') -%}
   {% endif %}
 postfix_{{mapping}}:
