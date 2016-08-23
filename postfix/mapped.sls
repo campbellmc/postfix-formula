@@ -11,7 +11,7 @@ include:
     {% set file_path = file_path.split(':')[1] -%}
     {% set map_type = file_path.split(':')[0] -%}
   {% endif -%}
-postfix_{{ mapping }}:
+postfix_{{mapping}}:
   file.managed:
     - name: {{ file_path }}
     - source: salt://{{slspath}}/files/mapping.jinja
@@ -28,6 +28,7 @@ postfix_{{ mapping }}:
     - require:
       - pkg: postfix
   {% if map_type in postfix.postmap_types -%}
+postmap_{{mapping}}:
   cmd.wait:
     - name: {{postfix.postmap}} {{map_type}} {{file_path}}
     - cwd: /
