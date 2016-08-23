@@ -8,8 +8,7 @@ include:
   {% set map_type = '' -%}
   {% set file_path = salt['pillar.get']('postfix:config:' ~ mapping) -%}
   {% if ':' in file_path -%}
-    {% set file_path = file_path.split(':')[1] -%}
-    {% set map_type = file_path.split(':')[0] -%}
+    {% set map_type,file_path = file_path.split(':') -%}
   {% endif %}
 postfix_{{mapping}}:
   file.managed:
