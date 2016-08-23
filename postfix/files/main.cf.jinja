@@ -1,23 +1,21 @@
-{%- from "postfix/map.jinja" import postfix with context -%}
-{%- set config = salt['pillar.get']('postfix:config', {}) -%}
-{% set processed_parameters = ['aliases_file', 'virtual', 'sasl_passwd', 'sender_canonical', 'header_checks', 'body_checks'] %}
-{%- macro set_parameter(parameter, default=None) -%}
-{% set value = config.get(parameter, default) %}
-{%- if value is not none %}
-  {%- if value is number or value is string -%}
-{{ parameter }} = {{ value }}
-  {%- elif value is iterable -%}
-{{ parameter }} =
-    {%- for v in value %}
-       {{ v }},
-    {%- endfor %}
-  {%- endif -%}
-{%- do processed_parameters.append(parameter) %}
-{%- endif %}
-{%- endmacro -%}
+{% from "postfix/map.jinja" import postfix with context -%}
+{% set config = postfix.config -%}
+{% set processed_parameters = [] -%}
+
+{% macro set_parameter(parameter, default=None) -%}
+{% set value = config.get(parameter, default) -%}
+{% if value is not none -%}
+  {% if value is number or value is string -%}
+{{parameter}} = {{value}}
+  {% elif value is iterable -%}
+{{parameter}} = {{value|join(', ')}}
+  {% endif -%}
+{% do processed_parameters.append(parameter) -%}
+{% endif -%}
+{% endmacro -%}
+
 # Managed by config management
 # See /usr/share/postfix/main.cf.dist for a commented, more complete version
-
 
 # Debian specific:  Specifying a file name will cause the first
 # line of that file to be used as the name.  The Debian default
@@ -36,22 +34,22 @@
 
 {{ set_parameter('readme_directory', 'no') }}
 
-{%- set relay_restrictions = ['permit_mynetworks'] %}
-{%- set recipient_restrictions = ['permit_mynetworks'] %}
+{% set relay_restrictions = ['permit_mynetworks'] -%}
+{% set recipient_restrictions = ['permit_mynetworks'] -%}
 
-{%- if config.get('smtpd_sasl_auth_enable', 'yes') == 'yes' %}
+{% if config.get('smtpd_sasl_auth_enable', 'yes') == 'yes' -%}
 # SASL parameters (http://www.postfix.org/SASL_README.html)
-{%- do relay_restrictions.append('permit_sasl_authenticated') %}
-{%- do recipient_restrictions.append('permit_sasl_authenticated') %}
+{% do relay_restrictions.append('permit_sasl_authenticated') -%}
+{% do recipient_restrictions.append('permit_sasl_authenticated') -%}
 {{ set_parameter('smtpd_sasl_auth_enable', 'yes') }}
 {{ set_parameter('smtpd_sasl_path', 'smtpd') }}
 {{ set_parameter('smtpd_sasl_type', 'cyrus') }}
 {{ set_parameter('smtpd_sasl_security_options', ['noanonymous', 'noplaintext']) }}
 {{ set_parameter('smtpd_sasl_tls_security_options', ['noanonymous']) }}
 {{ set_parameter('smtpd_tls_auth_only', 'yes') }}
-{%- endif %}
+{% endif -%}
 
-{%- if config.get('smtpd_use_tls', 'yes') == 'yes' %}
+{% if config.get('smtpd_use_tls', 'yes') == 'yes' -%}
 # TLS parameters (http://www.postfix.org/TLS_README.html)
 # Recipient settings
 {{ set_parameter('smtpd_use_tls') }}
@@ -69,7 +67,7 @@
 {{ set_parameter('smtp_tls_loglevel', 1) }}
 {{ set_parameter('smtp_tls_security_level', 'may') }}
 {{ set_parameter('smtp_tls_session_cache_database', 'btree:${data_directory}/smtp_scache') }}
-{%- endif %}
+{% endif -%}
 
 {{ set_parameter('myhostname', grains['fqdn']) }}
 {{ set_parameter('alias_maps', 'hash:' ~ postfix.aliases_file) }}
@@ -82,44 +80,48 @@
 {{ set_parameter('inet_interfaces', 'all') }}
 {{ set_parameter('message_size_limit', '41943040') }}
 
-{%- if config.get('relayhost') %}
-{% set policyd_spf = salt['pillar.get']('postfix:policyd-spf', {}) %}
-  {%- if policyd_spf.get('enabled', False) %}
-  {%- do relay_restrictions.append('check_policy_server unix:private/policyd-spf') %}
+{% if config.get('relayhost') -%}
+{% set policyd_spf = salt['pillar.get']('postfix:policyd-spf', {}) -%}
+  {% if policyd_spf.get('enabled', False) -%}
+  {% do relay_restrictions.append('check_policy_server unix:private/policyd-spf') -%}
 policy-spf_time_limit = {{ policyd_spf.get('time_limit', '3600s') }}
-  {%- endif %}
-{%- do relay_restrictions.append('defer_unauth_destination') %}
+  {% endif -%}
+{% do relay_restrictions.append('defer_unauth_destination') -%}
 {{ set_parameter('smtpd_relay_restrictions', relay_restrictions) }}
-{%- endif %}
+{% endif -%}
 
 {#- check_policy_service must be after reject_unauth_destination #}
-{%- do recipient_restrictions.append('reject_unauth_destination') %}
-{%- set postgrey_config = salt['pillar.get']('postfix:postgrey', {}) %}
-{%- if postgrey_config.get('enabled', False) %}
-{%- do recipient_restrictions.append('check_policy_service ' ~ postgrey_config.get('location', 'inet:127.0.0.1:10030')) %}
-{%- endif %}
+{% do recipient_restrictions.append('reject_unauth_destination') -%}
+{% set postgrey_config = salt['pillar.get']('postfix:postgrey', {}) -%}
+{% if postgrey_config.get('enabled', False) -%}
+{% do recipient_restrictions.append('check_policy_service ' ~ postgrey_config.get('location', 'inet:127.0.0.1:10030')) -%}
+{% endif -%}
 {{ set_parameter('smtpd_recipient_restrictions', recipient_restrictions) }}
 
-{% if 'virtual' in postfix %}
+{% if 'virtual_alias_maps' in postfix -%}
 virtual_alias_maps = hash:/etc/postfix/virtual
-{% endif %}
+{% do processed_parameters.append('virtual_alias_maps') -%}
+{% endif -%}
 
-{% if 'sasl_passwd' in postfix %}
+{% if 'sasl_passwd_maps' in postfix -%}
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
-{% endif %}
+{% do processed_parameters.append('sasl_passwd_maps') -%}
+{% endif -%}
 
-{% if 'sender_canonical' in postfix %}
+{% if 'sender_canonical_maps' in postfix -%}
 sender_canonical_maps = hash:/etc/postfix/sender_canonical
-{% endif %}
+{% do processed_parameters.append('sender_canonical_maps') -%}
+{% endif -%}
 
-{% if 'body_checks' in postfix %}
+{% if 'body_check_maps' in postfix -%}
 body_checks = postfix.body_check_maps
-{% endif %}
+{% do processed_parameters.append('body_check_maps') -%}
+{% endif -%}
 
-{% if 'header_checks' in postfix %}
+{% if 'header_check_maps' in postfix -%}
 header_checks = postfix.header_check_maps
-{% endif %}
-
+{% do processed_parameters.append('header_check_maps') -%}
+{% endif -%}
 
 {# Accept arbitrary parameters -#}
 {% for parameter in config -%}
