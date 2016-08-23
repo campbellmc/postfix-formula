@@ -98,33 +98,33 @@ policy-spf_time_limit = {{ policyd_spf.get('time_limit', '3600s') }}
 {% endif -%}
 {{ set_parameter('smtpd_recipient_restrictions', recipient_restrictions) }}
 
-{% if 'virtual_alias_maps' in postfix -%}
+{% if 'virtual_alias_maps' in postfix.config -%}
 virtual_alias_maps = hash:/etc/postfix/virtual
 {% do processed_parameters.append('virtual_alias_maps') -%}
 {% endif -%}
 
-{% if 'sasl_passwd_maps' in postfix -%}
+{% if 'sasl_passwd_maps' in postfix.config -%}
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
 {% do processed_parameters.append('sasl_passwd_maps') -%}
 {% endif -%}
 
-{% if 'sender_canonical_maps' in postfix -%}
+{% if 'sender_canonical_maps' in postfix.config -%}
 sender_canonical_maps = hash:/etc/postfix/sender_canonical
 {% do processed_parameters.append('sender_canonical_maps') -%}
 {% endif -%}
 
-{% if 'body_check_maps' in postfix -%}
+{% if 'body_check_maps' in postfix.config -%}
 body_checks = postfix.body_check_maps
 {% do processed_parameters.append('body_check_maps') -%}
 {% endif -%}
 
-{% if 'header_check_maps' in postfix -%}
+{% if 'header_check_maps' in postfix.config -%}
 header_checks = postfix.header_check_maps
 {% do processed_parameters.append('header_check_maps') -%}
 {% endif -%}
 
 {# Accept arbitrary parameters -#}
-{% for parameter in config -%}
+{% for parameter in postfix.config -%}
 {% if parameter not in processed_parameters -%}
 {{ set_parameter(parameter) }}
 {% endif -%}

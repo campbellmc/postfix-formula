@@ -1,4 +1,5 @@
 postfix:
+  config: {}
   mapping: {}
   mapping_string: {}
   certificates: {}
