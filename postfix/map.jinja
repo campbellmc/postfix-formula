@@ -1,32 +1,22 @@
-{% set postfix = salt['grains.filter_by']({
-    'Debian': {
-        'package': 'postfix',
-        'policyd_spf_pkg': 'postfix-policyd-spf-python',
-        'postgrey_pkg': 'postgrey',
-        'pcre_pkg': 'postfix-pcre',
-        'mysql_pkg': 'postfix-mysql',
-        'service': 'postfix',
-        'aliases_file': '/etc/aliases',
-    },
-    'Gentoo': {
-        'package': 'mail-mta/postfix',
-        'policyd_spf_pkg': 'mail-filter/pypolicyd-spf',
-        'postgrey_pkg': 'mail-filter/postgrey',
-        'service': 'postfix',
-        'aliases_file': '/etc/mail/aliases',
-    },
-    'RedHat': {
-        'package': 'postfix',
-        'policyd_spf_pkg': 'pypolicyd-spf',
-        'postgrey_pkg': 'postgrey',
-        'service': 'postfix',
-        'aliases_file': '/etc/aliases',
-    },
-    'Arch' : {
-        'package': 'postfix',
-        'policyd_spf_pkg': 'python-postfix-policyd-spf',
-        'postgrey_pkg': 'postgrey',
-        'service': 'postfix',
-        'aliases_file': '/etc/aliases',
-    },
-}, merge=salt['pillar.get']('postfix:lookup')) %}
+{% import_yaml "postfix/defaults.yaml" as defaults %}
+{% import_yaml "postfix/osmap.yaml" as osmap %}
+{% import_yaml "postfix/codenamemap.yaml" as codemap %}
+
+{# get the settings for the os_family grain #}
+{% set osfam = salt['grains.filter_by'](osmap) or {} %}
+{# get the settings for the oscodename grain, os_family data will override
+    oscodename data #}
+{% set oscode = salt['grains.filter_by'](codemap,
+                                         grain='oscodename',
+                                         merge=osfam) or {} %}
+
+{# merge the os family/codename specific data over the defaults #}
+{% do defaults.postfix.update(oscode) %}
+
+{# merge the pillar:lookup dict into the defaults/os specific dict #}
+{% set lookup = salt['pillar.get']('postfix:lookup',
+                                   default=defaults.postfix,
+                                   merge=True) %}
+
+{# merge the actual postfix pillar into the above combined dict #}
+{% set postfix = salt['pillar.get']('postfix', default=lookup, merge=True) %}

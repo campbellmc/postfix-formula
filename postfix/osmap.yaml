@@ -1,0 +1,35 @@
+RedHat:
+    package: postfix
+    policyd_spf_pkg: pypolicyd-spf
+    postgrey_pkg: postgrey
+    service: postfix
+    aliases_file: /etc/aliases
+    newaliases: /bin/newaliases
+    postmap: /sbin/postmap
+Arch:
+    package: postfix
+    policyd_spf_pkg: python-postfix-policyd-spf
+    postgrey_pkg: postgrey
+    service: postfix
+    aliases_file: /etc/aliases
+    newaliases: /bin/newaliases
+    postmap: /sbin/postmap
+Debian:
+    package: postfix
+    policyd_spf_pkg: postfix-policyd-spf-python
+    postgrey_pkg: postgrey
+    pcre_pkg: postfix-pcre
+    mysql_pkg: postfix-mysql
+    service: postfix
+    aliases_file: /etc/aliases
+    newaliases: /bin/newaliases
+    postmap: /sbin/postmap
+Suse: {}
+Gentoo:
+    package: mail-mta/postfix
+    policyd_spf_pkg: mail-filter/pypolicyd-spf
+    postgrey_pkg: mail-filter/postgrey
+    service: postfix
+    aliases_file: /etc/mail/aliases
+    newaliases: /bin/newaliases
+    postmap: /sbin/postmap

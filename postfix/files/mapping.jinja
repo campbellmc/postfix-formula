@@ -3,15 +3,19 @@
 {%- macro format_value(key, value) %}
   {#- Some settings, like virtual_alias_maps can take multiple values. Handle this case. -#}
   {%- if value is iterable and value is not string -%}
-{{ key }}	{{ value|join(", ") }}
+{{key}}	{{value|join(", ")}}
   {%- else -%}
-{{ key }}	{{ value }}
+{{key}}	{{value}}
   {%- endif -%}
 {%- endmacro %}
 
 {%- if data is mapping %}
-{% for key, value in data.iteritems() %}
-{{ format_value(key, value) }}
+{% for item in data.items() %}
+{% if item is string -%}
+{{item}}
+{% else -%}
+{{format_value(item, data[item])}}
+{%- endif %}
 {%- endfor -%}
 {%- else %}
 {#- Some settings need order, handle OrderedDict #}

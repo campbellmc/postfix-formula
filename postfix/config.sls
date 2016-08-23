@@ -1,32 +1,27 @@
-include:
-  - postfix
+{% from "postfix/map.jinja" import postfix with context -%}
 
-/etc/postfix:
-  file.directory:
-    - user: root
-    - group: root
-    - dir_mode: 755
-    - file_mode: 644
-    - makedirs: True
+include:
+  - postfix.install
 
 /etc/postfix/main.cf:
   file.managed:
-    - source: salt://postfix/files/main.cf
+    - source: salt://{{slspath}}/files/main.cf
     - user: root
     - group: root
-    - mode: 644
+    - mode: {{postfix.file_mode}}
     - require:
       - pkg: postfix
     - watch_in:
       - service: postfix
     - template: jinja
+
 {% if salt['pillar.get']('postfix:manage_master_config', True) %}
 /etc/postfix/master.cf:
   file.managed:
-    - source: salt://postfix/files/master.cf
+    - source: salt://{{slspath}}/files/master.cf
     - user: root
     - group: root
-    - mode: 644
+    - mode: {{postfix.file_mode}}
     - require:
       - pkg: postfix
     - watch_in:
@@ -34,8 +29,7 @@ include:
     - template: jinja
 {% endif %}
 
-{%- for domain in salt['pillar.get']('postfix:certificates', {}).keys() %}
-
+{%- for domain in postfix.certificates.keys() %}
 postfix_{{ domain }}_ssl_certificate:
   file.managed:
     - name: /etc/postfix/ssl/{{ domain }}.crt
@@ -52,5 +46,4 @@ postfix_{{ domain }}_ssl_key:
     - contents_pillar: postfix:certificates:{{ domain }}:private_key
     - watch_in:
        - service: postfix
-
 {% endfor %}

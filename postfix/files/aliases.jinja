@@ -1,0 +1,5 @@
+{% from "postfix/map.jinja" import postfix with context -%}
+
+# Managed by config management
+# See man 5 aliases for format
+{{postfix.aliases}}
