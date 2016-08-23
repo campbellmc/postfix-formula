@@ -6,9 +6,9 @@ include:
 # manage various mappings
 {% for mapping, data in postfix.mapping.items() -%}
   {% set map_type = '' -%}
-  {% set file_path = salt['pillar.get']('postfix:config:' ~ mapping) -%}
+  {% set file_param = salt['pillar.get']('postfix:config:' ~ mapping) -%}
   {% if ':' in file_path -%}
-    {% set map_type,file_path = file_path.split(':') -%}
+    {% set map_type,file_path = file_param.split(':') -%}
   {% endif %}
 postfix_{{mapping}}:
   file.managed:
@@ -29,7 +29,7 @@ postfix_{{mapping}}:
   {% if map_type in postfix.postmap_types %}
 postmap_{{mapping}}:
   cmd.wait:
-    - name: {{postfix.postmap}} {{map_type}} {{file_path}}
+    - name: {{postfix.postmap}} {{file_param}}
     - cwd: /
     - watch:
       - file: {{file_path}}
