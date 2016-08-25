@@ -2,6 +2,7 @@
 
 include:
   - postfix.install
+  - postfix.config
 
 # manage various mappings
 {% for mapping, data in postfix.mapping.items() -%}
@@ -35,5 +36,7 @@ postmap_{{mapping}}:
       - file: {{file_path}}
     - watch_in:
       - service: postfix
+    - require:
+      - sls: postfix.config
   {% endif -%}
 {% endfor -%}

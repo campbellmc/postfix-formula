@@ -21,4 +21,6 @@ ensure_newaliases:
     - cwd: /
     - watch:
       - file: {{postfix.aliases_file}}
+    - require:
+      - sls: postfix.config
 {% endif %}

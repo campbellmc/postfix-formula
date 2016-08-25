@@ -2,7 +2,7 @@
 
 include:
   - postfix.install
+  - postfix.config
   - postfix.aliases
   - postfix.mapped
-  - postfix.config
   - postfix.service
