@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: ft=jinja
+
 {% set master_config = salt['pillar.get']('postfix:master_config', {}) -%}
 #
 # Postfix master process configuration file.  For details on the format

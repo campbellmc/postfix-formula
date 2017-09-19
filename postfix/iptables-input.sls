@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: ft=sls
+
 smtp.input:
   iptables.chain_present:
     -
